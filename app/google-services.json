@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "398065831517",
+    "firebase_url": "https://cmpe295b-a3734.firebaseio.com",
+    "project_id": "cmpe295b-a3734",
+    "storage_bucket": "cmpe295b-a3734.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398065831517:android:75e21b62e49780f7",
+        "android_client_info": {
+          "package_name": "com.example.jason.watchapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "398065831517-j2ropm9shreidkiri382ao1gp1spii6p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3FSvB5PYDnrw9eVyN1hF28Rxw6oEdsew"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
