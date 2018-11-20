@@ -10,18 +10,28 @@
     tools:context="com.example.jason.watchapp.RegisterDeviceActivity"
     tools:deviceIds="wear">
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="@dimen/inner_frame_layout_padding"
+        android:orientation="vertical"
+        android:gravity="center"
         app:boxedEdges="all">
 
-        <TextView
-            android:id="@+id/text"
+        <EditText
+            android:id="@+id/deviceKey"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Enter Device Key"
+            android:inputType="number" />
+
+        <Button
+            android:id="@+id/submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/hello_world" />
+            android:text="SUBMIT"/>
 
-    </FrameLayout>
+    </LinearLayout>
 </android.support.wear.widget.BoxInsetLayout>
 

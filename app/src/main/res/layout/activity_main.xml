@@ -34,6 +34,22 @@
             android:textSize="20sp"
             android:text="Orientation"/>
 
+        <TextView
+            android:id="@+id/accelerometer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:text="Accelerometer"/>
+
+        <TextView
+            android:id="@+id/step"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:text="Step"/>
+
         <ImageButton
             android:id="@+id/btnStart"
             android:layout_width="40dp"

@@ -7,7 +7,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
+import android.util.Log;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -20,16 +22,28 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
     private TextView mHeartText;
     private TextView mOrientationText;
+    private TextView mAccelerometerText;
+    private TextView mStepText;
+
     private ImageButton btnStart;
     private ImageButton btnPause;
 
     private SensorManager mSensorManager;
     private Sensor mHeartRateSensor;
     private Sensor mOrientationSensor;
+    private Sensor mAccelerometerSensor;
+    private Sensor mStepSensor;
+
     private SensorEventListener listener;
 
+    private Firebase myRootRef;
+    private Firebase heartRate;
     private Firebase orientation;
-    private  Firebase heartRate;
+    private Firebase accelerometer;
+    private Firebase step;
+
+
+    private String userId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,38 +53,70 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
         mHeartText = findViewById(R.id.heart);
         mOrientationText = findViewById(R.id.orientation);
+        mAccelerometerText = findViewById(R.id.accelerometer);
+        mStepText = findViewById(R.id.step);
+
         btnStart = (ImageButton) findViewById(R.id.btnStart);
         btnPause = (ImageButton) findViewById(R.id.btnPause);
+        userId = getIntent().getStringExtra("userId");
+
+        myRootRef = new Firebase("https://cmpe295b-a3734.firebaseio.com/users").child(userId);
+        heartRate = myRootRef.child("heart rate");
+        orientation = myRootRef.child("orientation");
+        accelerometer = myRootRef.child("accelerometer");
+        step = myRootRef.child("step");
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         listener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                Sensor sensor = event.sensor;
-                if (sensor.getType() == Sensor.TYPE_HEART_RATE) {
-                    float mHeartRateFloat = event.values[0];
+                int sensorType = event.sensor.getType();
+                switch (sensorType) {
+                    case Sensor.TYPE_HEART_RATE:
+                        float mHeartRateFloat = event.values[0];
 
-                    int mHeartRate = Math.round(mHeartRateFloat);
+                        int mHeartRate = Math.round(mHeartRateFloat);
 
-                    mHeartText.setText("Heaart Rate: " + Integer.toString(mHeartRate));
-                    heartRate.setValue(Integer.toString(mHeartRate));
-                } else if (sensor.getType() == Sensor.TYPE_ORIENTATION) {
-                    float mOrientationFloat = event.values[0];
+                        mHeartText.setText("Heart Rate   " + Integer.toString(mHeartRate));
+                        heartRate.setValue(Integer.toString(mHeartRate));
+                        break;
+                    case Sensor.TYPE_ORIENTATION:
+                        float mOrientationFloat = event.values[0];
 
-                    int mOrientation = Math.round(mOrientationFloat);
+                        int mOrientation = Math.round(mOrientationFloat);
 
-                    mOrientationText.setText("Orientation: " + Integer.toString(mOrientation));
-                    orientation.setValue(Integer.toString(mOrientation));
+                        mOrientationText.setText("Orientation   " + Integer.toString(mOrientation));
+                        orientation.setValue(Integer.toString(mOrientation));
+                        break;
+                    case Sensor.TYPE_ACCELEROMETER:
+                        float mAcceleromrterFloat = event.values[0];
+
+                        int mAcceleromrter = Math.round(mAcceleromrterFloat);
+
+                        mAccelerometerText.setText("Accelerometer   " + Integer.toString(mAcceleromrter));
+                        accelerometer.setValue(Integer.toString(mAcceleromrter));
+                        break;
+                    case Sensor.TYPE_STEP_COUNTER:
+                        float mStepFloat = event.values[0];
+
+                        int mStep = Math.round(mStepFloat);
+
+                        mStepText.setText("Step   " + Integer.toString(mStep));
+                        step.setValue(Integer.toString(mStep));
+
+                    default:
+                        Log.d("onSensorChange", "we dont have sensor data");
                 }
             }
 
             @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-            }
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {}
         };
+
         mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
         mOrientationSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+        mAccelerometerSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mStepSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
 
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,6 +143,8 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     private void startMeasure() {
         mSensorManager.registerListener(listener, mHeartRateSensor, SensorManager.SENSOR_DELAY_FASTEST);
         mSensorManager.registerListener(listener, mOrientationSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(listener, mAccelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(listener, mStepSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     private void stopMeasure() {
@@ -112,14 +160,11 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     @Override
     protected void onStart() {
         super.onStart();
-        orientation = new Firebase("https://cmpe295b-a3734.firebaseio.com/users/jason/orientation");
-        heartRate = new Firebase("https://cmpe295b-a3734.firebaseio.com/users/jason/heart rate");
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        startMeasure();
     }
 
     @Override
