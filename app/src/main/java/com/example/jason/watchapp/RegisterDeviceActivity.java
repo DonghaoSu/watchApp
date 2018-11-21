@@ -49,9 +49,11 @@ public class RegisterDeviceActivity extends WearableActivity {
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
+
                                 Intent intent = new Intent(RegisterDeviceActivity.this, MainActivity.class);
                                 intent.putExtra("userId", userId);
-                                startActivity(intent);
+                                setResult(RESULT_OK, intent);
+                                finish();
                             }
                         },
                         new Response.ErrorListener() {
