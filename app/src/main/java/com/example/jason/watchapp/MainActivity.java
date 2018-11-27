@@ -69,17 +69,32 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Firebase.setAndroidContext(this);
-        Boolean isFirstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE)
-                .getBoolean("isFirstRun", true);
 
-        if (isFirstRun) {
-            Intent intent = new Intent(MainActivity.this, RegisterDeviceActivity.class);
-            startActivityForResult(intent, REQUEST_CODE);
-        }
+        userId = getIntent().getStringExtra("userId");
+        myRootRef = new Firebase("https://cmpe295b-a3734.firebaseio.com/users").child(userId);
+        heartRate = myRootRef.child("heart rate");
+        orientation = myRootRef.child("orientation");
+        accelerometer = myRootRef.child("accelerometer");
+        step = myRootRef.child("step");
 
+        gravity = myRootRef.child("gravity");
+        proximity = myRootRef.child("proximity");
+        gyroscope = myRootRef.child("gyroscope");
+        activeTime = myRootRef.child("activeTime");
 
-        getSharedPreferences("PREFERENCE", MODE_PRIVATE).edit()
-                .putBoolean("isFirstRun", false).apply();
+        simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
+//        Boolean isFirstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+//                .getBoolean("isFirstRun", true);
+//
+//        if (isFirstRun) {
+//            Intent intent = new Intent(MainActivity.this, RegisterDeviceActivity.class);
+//            startActivityForResult(intent, REQUEST_CODE);
+//        }
+//
+//
+//        getSharedPreferences("PREFERENCE", MODE_PRIVATE).edit()
+//                .putBoolean("isFirstRun", false).apply();
 
         mHeartText = findViewById(R.id.heart);
         mOrientationText = findViewById(R.id.orientation);
@@ -96,55 +111,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         mAccelerometerSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mStepSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
 
-        btnStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btnStart.setVisibility(ImageButton.GONE);
-                btnPause.setVisibility(ImageButton.VISIBLE);
-                startMeasure();
-            }
-        });
-
-        btnPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btnPause.setVisibility(ImageButton.GONE);
-                btnStart.setVisibility(ImageButton.VISIBLE);
-                stopMeasure();
-            }
-        });
-
-        // Enables Always-on
-        setAmbientEnabled();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                userId = data.getStringExtra("userId");
-                setupFirebase();
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private void setupFirebase() {
-
-        myRootRef = new Firebase("https://cmpe295b-a3734.firebaseio.com/users").child(userId);
-        heartRate = myRootRef.child("heart rate");
-        orientation = myRootRef.child("orientation");
-        accelerometer = myRootRef.child("accelerometer");
-        step = myRootRef.child("step");
-
-        gravity = myRootRef.child("gravity");
-        proximity = myRootRef.child("proximity");
-        gyroscope = myRootRef.child("gyroscope");
-        activeTime = myRootRef.child("activeTime");
-
-        simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mGravitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+        mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        mGyroscopeSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
         listener = new SensorEventListener() {
             @Override
@@ -215,10 +184,6 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             public void onAccuracyChanged(Sensor sensor, int accuracy) {}
         };
 
-        mGravitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-        mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        mGyroscopeSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -246,6 +211,18 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         // Enables Always-on
         setAmbientEnabled();
     }
+
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        if (requestCode == REQUEST_CODE) {
+//            if (resultCode == RESULT_OK) {
+//                userId = data.getStringExtra("userId");
+//                setupFirebase();
+//            }
+//        }
+//        super.onActivityResult(requestCode, resultCode, data);
+//    }
+
     private void startMeasure() {
         mSensorManager.registerListener(listener, mHeartRateSensor, SensorManager.SENSOR_DELAY_FASTEST);
         mSensorManager.registerListener(listener, mOrientationSensor, SensorManager.SENSOR_DELAY_FASTEST);
