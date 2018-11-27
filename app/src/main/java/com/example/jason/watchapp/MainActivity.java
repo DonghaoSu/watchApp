@@ -14,8 +14,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.firebase.client.Firebase;
+import com.google.android.gms.fitness.data.DataType;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Locale;
 
 public class MainActivity extends WearableActivity implements SensorEventListener{
@@ -33,6 +35,10 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     private Sensor mOrientationSensor;
     private Sensor mAccelerometerSensor;
     private Sensor mStepSensor;
+    private Sensor mGravitySensor;
+    private Sensor mProximitySensor;
+    private Sensor mGyroscopeSensor;
+
 
     private SensorEventListener listener;
 
@@ -41,9 +47,20 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     private Firebase orientation;
     private Firebase accelerometer;
     private Firebase step;
-
+    private Firebase gravity;
+    private Firebase proximity;
+    private Firebase gyroscope;
+    private Firebase activeTime;
 
     private String userId;
+
+    Calendar calendar;
+    Calendar calendar1;
+    SimpleDateFormat simpleDateFormat;
+    String date;
+    long startTime;
+    long stopTime;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +73,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         mAccelerometerText = findViewById(R.id.accelerometer);
         mStepText = findViewById(R.id.step);
 
+
         btnStart = (ImageButton) findViewById(R.id.btnStart);
         btnPause = (ImageButton) findViewById(R.id.btnPause);
         userId = getIntent().getStringExtra("userId");
@@ -66,11 +84,20 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         accelerometer = myRootRef.child("accelerometer");
         step = myRootRef.child("step");
 
+        gravity = myRootRef.child("gravity");
+        proximity = myRootRef.child("proximity");
+        gyroscope = myRootRef.child("gyroscope");
+        activeTime = myRootRef.child("activeTime");
+
+        simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         listener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
                 int sensorType = event.sensor.getType();
+//                calendar1 = Calendar.getInstance();
+//                stopTime = calendar1.getTimeInMillis();
                 switch (sensorType) {
                     case Sensor.TYPE_HEART_RATE:
                         float mHeartRateFloat = event.values[0];
@@ -103,7 +130,28 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
                         mStepText.setText("Step   " + Integer.toString(mStep));
                         step.setValue(Integer.toString(mStep));
+                        break;
+                    case Sensor.TYPE_GRAVITY:
+                        float mGravityFloat = event.values[0];
 
+                        int mGravity = Math.round(mGravityFloat);
+
+                        gravity.setValue(Integer.toString(mGravity));
+                        break;
+                    case Sensor.TYPE_PROXIMITY:
+                        float mProximityFloat = event.values[0];
+
+                        int mProximity = Math.round(mProximityFloat);
+
+                        proximity.setValue(Integer.toString(mProximity));
+                        break;
+                    case Sensor.TYPE_GYROSCOPE:
+                        float mGyroscopeFloat = event.values[0];
+
+                        int mGyroscope = Math.round(mGyroscopeFloat);
+
+                        gyroscope.setValue(Integer.toString(mGyroscope));
+                        break;
                     default:
                         Log.d("onSensorChange", "we dont have sensor data");
                 }
@@ -118,11 +166,18 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         mAccelerometerSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mStepSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
 
+        mGravitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+        mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        mGyroscopeSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btnStart.setVisibility(ImageButton.GONE);
                 btnPause.setVisibility(ImageButton.VISIBLE);
+                calendar = Calendar.getInstance();
+                startTime = calendar.getTimeInMillis();
+                Log.d("checktime", Long.toString(startTime));
                 startMeasure();
             }
         });
@@ -132,6 +187,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             public void onClick(View v) {
                 btnPause.setVisibility(ImageButton.GONE);
                 btnStart.setVisibility(ImageButton.VISIBLE);
+                calendar1 = Calendar.getInstance();
+                stopTime = calendar1.getTimeInMillis();
+                activeTime.setValue(Long.toString((stopTime-startTime)/1000) + "sec");
                 stopMeasure();
             }
         });
@@ -145,6 +203,10 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         mSensorManager.registerListener(listener, mOrientationSensor, SensorManager.SENSOR_DELAY_FASTEST);
         mSensorManager.registerListener(listener, mAccelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
         mSensorManager.registerListener(listener, mStepSensor, SensorManager.SENSOR_DELAY_FASTEST);
+
+        mSensorManager.registerListener(listener, mGravitySensor, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(listener, mProximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(listener, mGyroscopeSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     private void stopMeasure() {
@@ -156,16 +218,6 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
 
     @Override
     public void onPause() {
